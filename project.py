@@ -1,11 +1,14 @@
 from matplotlib.style import use
 import streamlit as st
 import pandas as pd
-import seaborn as sns
 import plotly.express as px
 
 #Setting Page
 st.set_page_config(layout="centered")
+
+#Sidebar
+with st.sidebar:
+        st.write("**Opsi Diagram**")
 
 #Judul
 st.title("Ramai di *Citayam Fashion Week*, Bagaimana Nasib Gen Z?")
@@ -40,13 +43,14 @@ with col1_2:
     st.plotly_chart(fig_gen, use_container_width=True)
     st.caption('Sumber: Badan Pusat Statistik')
 
-radio2 = st.radio(label='Opsi Diagram:', options=('Persen','Total'), horizontal=True)
-if radio2 == 'Persen':
-    groupnorm = 'percent'
-    ylabel= 'Persentase Penduduk'
-else:
-    groupnorm = ''
-    ylabel='Jumlah Penduduk (ribu jiwa)'
+with st.sidebar:
+        radio1 = st.radio(label='Proyeksi Jumlah Penduduk', options=('Persen','Jumlah'), horizontal=True)
+        if radio1 == 'Persen':
+                groupnorm = 'percent'
+                ylabel= 'Persentase Penduduk'
+        else:
+                groupnorm = ''
+                ylabel='Jumlah Penduduk (ribu jiwa)'
 
 col2_1, col2_2 = st.columns([2,1])
 with col2_1:
@@ -66,7 +70,7 @@ with col2_2:
     st.subheader('')
     st.write("Berdasarkan Analisis Profil Penduduk Indonesia yang dilakukan oleh Badan Pusat Statistik (BPS), "
             "Indonesia telah mengalami bonus demografi sejak 2012 dan puncaknya diperkirakan terjadi pada periode 2020-2030. "
-            "Bonus demografi dinilai dapat meningkatkan perekomonian suatu negara, seperti yang terjadi di Tiongkok, Korea Selatan, Jepang, dll. "
+            "Bonus demografi dinilai dapat meningkatkan perekonomian suatu negara, seperti yang terjadi di Tiongkok, Korea Selatan, Jepang, dll. "
             "Dengan besarnya populasi Gen Z di masa bonus demografi, peran Gen Z sangat signifikan dalam menentukan nasib bangsa Indonesia.")
 
 #Konten 2
@@ -76,6 +80,7 @@ st.write("Memiliki persentase jumlah penduduk terbesar, ironisnya jumlah pengang
         "Peningkatan jumlah angkatan kerja tidak sebanding dengan kesempatan kerja yang tersedia, terlebih jika harus sesuai dengan bidang keahliannya. "
         "Selain itu, banyak perusahaan yang mensyaratkan pengalaman kerja bagi pelamar. Padahal sebagian besar penganggur muda belum memiliki pekerjaan sebelumnya.")
 
+#Angkatan Kerja Berdasarkan Umur
 tpt = pd.read_csv('pengangguran_umur.csv')
 fig_tpt = px.pie(tpt,values='jumlah',names='kelompok_umur',
                 title='Jumlah Pengangguran Berdasarkan Kelompok Umur (Februari 2022)',
@@ -92,18 +97,32 @@ st.write("Berdasarkan tingkat pendidikan tertinggi yang ditamatkan, lulusan **Se
         "apakah SMK ini sudah berjalan sesuai dengan sistem vokasi yang benar?,\" katanya.")
 
 #Angkatan Kerja Berdasarkan Tingkat Pendidikan
+with st.sidebar:
+        radio2 = st.radio(label='Tingkat Pengangguran Terbuka', options=('Persen','Jumlah'), horizontal=True)
+        if radio2 == 'Persen':
+                column1,column2 = 'persen_bekerja','persen_pengangguran'
+                hover_list=['bekerja','pengangguran']
+                value = 'Persentase'
+        else:
+                column1,column2 = 'bekerja','pengangguran'
+                hover_list=['persen_bekerja','persen_pengangguran']
+                value='Jumlah'
+
 ak = pd.read_csv("angkatan_kerja.csv")
 ak['persen_pengangguran']=ak['pengangguran']/ak['jumlah_ak']*100
 ak['persen_pengangguran']=ak['persen_pengangguran'].round(2)
-ak. rename(columns = {'pengangguran':'Pengangguran', 'bekerja':'Bekerja'}, inplace = True)
-fig_ak = px.bar(ak, x='pendidikan_tertinggi', y=['Bekerja','Pengangguran'], 
-            title='Jumlah Angkatan Kerja Berdasarkan Tingkat Pendidikan (Februari 2022)',
-            hover_data=['persen_bekerja','persen_pengangguran'],
+ak.rename(columns = {column1:'Bekerja', column2:'Pengangguran'}, inplace = True)
+fig_ak = px.bar(ak, x='pendidikan_tertinggi', y=['Bekerja','Pengangguran'],
+            title='Angkatan Kerja Berdasarkan Tingkat Pendidikan (Februari 2022)',
+            hover_data=hover_list,
             labels={'pendidikan_tertinggi':'Pendidikan Tertinggi yang Ditamatkan',
-                    'value':'Jumlah Penduduk',
+                    'value':value,
                     'variable':'Keterangan',
                     'persen_bekerja':'Persentase Bekerja',
-                    'persen_pengangguran':'Persentase Pengangguran'})
+                    'persen_pengangguran':'Persentase Pengangguran',
+                    'bekerja':'Jumlah Bekerja',
+                    'pengangguran':'Jumlah Pengangguran'
+                    })
 fig_ak.update_layout(title_x=0.5)
 st.plotly_chart(fig_ak,use_container_width=True)
 st.caption('Sumber: Badan Pusat Statistik')
@@ -116,7 +135,7 @@ st.write("Setelah SMK, TPT tertinggi selanjutnya dipegang oleh lulusan **SMA (8,
         "lulusan mahasiswa yang bekerja sesuai dengan program studinya.")
 
 #Konten 3
-st.subheader("Gen Z Raja Era Digital")
+st.subheader("Apakah Gen Z Mampu Bersaing?")
 st.write("Gen Z lahir dan hidup di era perkembangan teknologi. "
         "Di era digital, pekerjaan-pekerjaan konvensional akan hilang seiring waktu, "
         "tergantikan oleh robot dan sistem yang terotomatisasi. "
@@ -125,6 +144,61 @@ st.write("Gen Z lahir dan hidup di era perkembangan teknologi. "
         "seperti analis dan saintis data, *artificial intelligence expert*, pengembang aplikasi dan game, "
         "*digital markerter*, *content creator*, dll."
         )
+
+#Penetrasi Keahlian
+with st.sidebar:
+        st.write(" ")
+        st.write("**Penetrasi Keahlian**")
+        option = st.selectbox("Pilih Tahun (Diagram Batang)", 
+                (2015,2016,2017,2018,2019,'Rata-Rata'))
+
+tab1, tab2= st.tabs(["10 Keahlian Teratas (Diagram Batang)", 
+                "Penetrasi Keahlian per Tahun (Diagram Garis)"])
+
+sp = pd.read_csv('skill_penetration.csv')
+
+#Penetrasi Keahlian Tertinggi
+with tab1:
+        sp_pivot = pd.pivot_table(sp, values='skill_group_penetration_rate', 
+                                index='skill_group_name', columns='year', 
+                                aggfunc='mean', sort=True)
+        sp_pivot['Rata-Rata']=sp_pivot.mean(axis=1)
+        sp_pivot = sp_pivot.reset_index().sort_values(by=option, axis=0, ascending=False)
+        sp_pivot_top10=sp_pivot.iloc[0:10,:]
+        
+
+        sp_pivot_fig = px.bar(sp_pivot_top10, x='skill_group_name', y=option,
+                                title='10 Kelompok Keahlian Teratas '+str(option),
+                                labels={
+                                        option: 'Penetrasi Keahlian',
+                                        'skill_group_name':'Kelompok Keahlian'
+                                }
+                                )
+        st.plotly_chart(sp_pivot_fig, use_container_width=True)
+        st.caption('Sumber: World Bank dan LinkedIn')
+
+#Penetrasi Keahlian Per Tahun
+with st.sidebar:
+        keahlian = list(sp_pivot['skill_group_name'])
+        options = st.multiselect("Pilih Keahlian (Diagram Garis)", 
+                                keahlian, ['Digital Literacy'])
+with tab2:
+        sp_gb=sp.groupby(by=['skill_group_name','year']).mean()
+        sp_gb=sp_gb.reset_index()
+        sp_gb_filter=sp_gb[sp_gb.skill_group_name.isin(options)]
+        sp_gb_line = px.line(sp_gb_filter, x='year', y = 'skill_group_penetration_rate',color='skill_group_name',
+                                title='Penetrasi Keahlian per Tahun',
+                                labels={
+                                        'skill_group_name':'Kelompok Keahlian',
+                                        'skill_group_penetration_rate':'Penetrasi Keahlian',
+                                        'year':'Tahun'})
+        st.plotly_chart(sp_gb_line, use_container_width=True)
+        st.caption('Sumber: World Bank dan LinkedIn')
+
+st.write("Berdasarkan data penetrasi keahlian dari World Bank dan LinkedIn, pekerjaan-pekerjaan yang membutuhkan keahlian "
+        "literasi digital selalu mendominasi sejak tahun 2015 hinga 2019. Hal ini menunjukkan bahwa kecakapan digital "
+        "berperan sangat penting dalam dunia kerja saat ini. Oleh karena itu, literasi digital yang baik sangat diperlukan "
+        "bagi siapapun agar mampu bersaing di dunia kerja.")
 
 #Indeks Literasi Digital
 ild = pd.read_csv('indeks_literasi_digital.csv')
